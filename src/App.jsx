@@ -1,5 +1,9 @@
 import { useState } from "react";
 
+const globalStyle = document.createElement("style");
+globalStyle.innerHTML = `* { margin: 0; padding: 0; box-sizing: border-box; } body { background: #0d0d0f; }`;
+document.head.appendChild(globalStyle);
+
 const GOLD = "#F0B429";
 const GOLD_DIM = "#B8860B";
 const BG = "#0d0d0f";
