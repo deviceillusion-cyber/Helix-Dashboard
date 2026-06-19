@@ -226,7 +226,7 @@ export default function AutoMod({ token, guild, apiFetch, user }) {
               {warnEntries.map(([userId, warns]) => (
                 <div key={userId} style={{ background: SURFACE2, border: `1px solid ${BORDER}`, borderRadius: 8, padding: "10px 14px", display: "flex", alignItems: "center", gap: 12 }}>
                   <div style={{ flex: 1 }}>
-                    <div style={{ color: TEXT, fontWeight: 600, fontSize: 13 }}><@{userId}></div>
+                    <div style={{ color: TEXT, fontWeight: 600, fontSize: 13 }}>{`<@${userId}>`}</div>
                     <div style={{ color: TEXT_DIM, fontSize: 12, marginTop: 2 }}>{warns.length} warning{warns.length !== 1 ? "s" : ""}</div>
                   </div>
                   <div style={{ fontSize: 12, color: warns.length >= config.warnThresholdBan ? RED : warns.length >= config.warnThresholdTimeout ? GOLD : TEXT_DIM, fontWeight: 700 }}>
