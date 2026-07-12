@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import AutoMod from "./AutoMod.jsx";
 
 // ── Config ────────────────────────────────────────────────────────────────────
@@ -594,11 +594,13 @@ function Dashboard({ token, user, guild, onBack }) {
 function useOAuth() {
   const [token, setToken] = useState(() => localStorage.getItem("helix_token"));
   const [loading, setLoading] = useState(false);
+  const exchanged = useRef(false);
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const code = params.get("code");
-    if (!code || token) return;
+    if (!code || token || exchanged.current) return;
+    exchanged.current = true;
 
     setLoading(true);
     fetch(`${API}/auth/callback`, {
