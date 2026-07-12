@@ -4,7 +4,7 @@ import AutoMod from "./AutoMod.jsx";
 // ── Config ────────────────────────────────────────────────────────────────────
 const CLIENT_ID = "1516339885261328475";
 const REDIRECT_URI = "https://helix-dashboard-six.vercel.app/callback";
-const API = import.meta.env.VITE_API_URL || "https://helix-production-0896.up.railway.app/api";
+const API = import.meta.env.VITE_API_URL || "https://helix-backup-production.up.railway.app/api";
 const OAUTH_URL = `https://discord.com/oauth2/authorize?client_id=${CLIENT_ID}&redirect_uri=${encodeURIComponent(REDIRECT_URI)}&response_type=code&scope=identify+guilds`;
 
 // ── Tokens ────────────────────────────────────────────────────────────────────
