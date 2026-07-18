@@ -508,7 +508,7 @@ function ChestSettings({ token, guild }) {
   const [config, setConfig] = useState(null);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
-  const [newPrize, setNewPrize] = useState({ name: "", weight: 1, emoji: "" });
+  const [newPrize, setNewPrize] = useState({ name: "", weight: 1, emoji: "", rewardType: "none", rewardAmount: 0 });
 
   useEffect(() => {
     if (!guild) return;
@@ -517,8 +517,9 @@ function ChestSettings({ token, guild }) {
 
   function addPrize() {
     if (!newPrize.name.trim()) return;
-    setConfig(c => ({ ...c, prizes: [...c.prizes, { name: newPrize.name.trim(), weight: Number(newPrize.weight || 1), emoji: newPrize.emoji || "" }] }));
-    setNewPrize({ name: "", weight: 1, emoji: "" });
+    const reward = (newPrize.rewardType && newPrize.rewardType !== "none") ? { type: newPrize.rewardType, amount: Number(newPrize.rewardAmount || 0) } : {};
+    setConfig(c => ({ ...c, prizes: [...c.prizes, { name: newPrize.name.trim(), weight: Number(newPrize.weight || 1), emoji: newPrize.emoji || "", reward }] }));
+    setNewPrize({ name: "", weight: 1, emoji: "", rewardType: "none", rewardAmount: 0 });
   }
 
   function removePrize(i) {
@@ -582,6 +583,20 @@ function ChestSettings({ token, guild }) {
             placeholder="Emoji (optional)"
             style={{ width: 120, background: SURFACE2, border: `1px solid ${BORDER}`, borderRadius: 8, color: TEXT, padding: "9px 12px", fontSize: 13 }}
           />
+          <select value={newPrize.rewardType} onChange={e => setNewPrize(p => ({ ...p, rewardType: e.target.value }))} style={{ width: 140, background: SURFACE2, border: `1px solid ${BORDER}`, borderRadius: 8, color: TEXT, padding: "9px 12px", fontSize: 13 }}>
+            <option value="none">No Reward</option>
+            <option value="coins">Coins</option>
+            <option value="exp">EXP</option>
+            <option value="prize">Prize Item</option>
+          </select>
+          <input
+            type="number"
+            min="0"
+            value={newPrize.rewardAmount}
+            onChange={e => setNewPrize(p => ({ ...p, rewardAmount: Number(e.target.value) }))}
+            placeholder="Amount"
+            style={{ width: 110, background: SURFACE2, border: `1px solid ${BORDER}`, borderRadius: 8, color: TEXT, padding: "9px 12px", fontSize: 13 }}
+          />
           <button onClick={addPrize} style={{ padding: "9px 16px", borderRadius: 8, background: GOLD, color: BG, border: "none", fontWeight: 800, fontSize: 13, cursor: "pointer" }}>Add</button>
         </div>
 
@@ -594,6 +609,7 @@ function ChestSettings({ token, guild }) {
                 <span style={{ fontSize: 16 }}>{p.emoji || "🎁"}</span>
                 <span style={{ flex: 1, fontWeight: 600, color: TEXT, fontSize: 13 }}>{p.name}</span>
                 <span style={{ fontSize: 11, fontWeight: 700, color: TEXT, background: SURFACE2, border: `1px solid ${BORDER}`, padding: "2px 8px", borderRadius: 4 }}>Weight: {p.weight}</span>
+                <span style={{ fontSize: 11, color: TEXT_DIM, marginLeft: 8 }}>{p.reward && p.reward.type ? (p.reward.type === "coins" ? `${p.reward.amount} coins` : p.reward.type === "exp" ? `${p.reward.amount} EXP` : "Prize Item") : "No reward"}</span>
                 <span style={{ fontSize: 10, color: TEXT_DIM, fontFamily: "monospace" }}>{"{prize_" + (i + 1) + "}"}</span>
                 <button onClick={() => removePrize(i)} style={{ background: RED + "22", border: `1px solid ${RED}44`, color: RED, borderRadius: 6, padding: "3px 8px", cursor: "pointer", fontSize: 12, fontWeight: 700 }}>✕</button>
               </div>
