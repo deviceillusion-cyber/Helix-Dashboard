@@ -1,12 +1,12 @@
 import { useState, useEffect, useRef } from "react";
 import AutoMod from "./AutoMod.jsx";
-
+ 
 // ── Config ────────────────────────────────────────────────────────────────────
 const CLIENT_ID = "1516339885261328475";
 const REDIRECT_URI = "https://helix-dashboard-six.vercel.app/callback";
 const API = import.meta.env.VITE_API_URL || "https://helix-backup-production.up.railway.app/api";
 const OAUTH_URL = `https://discord.com/oauth2/authorize?client_id=${CLIENT_ID}&redirect_uri=${encodeURIComponent(REDIRECT_URI)}&response_type=code&scope=identify+guilds`;
-
+ 
 // ── Tokens ────────────────────────────────────────────────────────────────────
 const GOLD = "#F0B429";
 const GOLD_DIM = "#B8860B";
@@ -20,24 +20,24 @@ const GREEN = "#3dd68c";
 const RED = "#f04d4d";
 const BLUE = "#5b8af5";
 const PURPLE = "#9b7cff";
-
+ 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 function apiFetch(path, token, opts = {}) {
   return fetch(`${API}${path}`, {
     ...opts,
-    headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json", ...(opts.headers ?? {}) },
+    headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json", "ngrok-skip-browser-warning": "true", ...(opts.headers ?? {}) },
   }).then(r => r.json());
 }
-
+ 
 // ── UI Primitives ─────────────────────────────────────────────────────────────
 function Card({ children, style }) {
   return <div style={{ background: SURFACE, border: `1px solid ${BORDER}`, borderRadius: 12, padding: 20, ...style }}>{children}</div>;
 }
-
+ 
 function SectionTitle({ children }) {
   return <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: 2, color: GOLD, textTransform: "uppercase", marginBottom: 16 }}>{children}</div>;
 }
-
+ 
 function Toggle({ value, onChange }) {
   return (
     <div onClick={() => onChange(!value)} style={{ width: 44, height: 24, borderRadius: 12, cursor: "pointer", background: value ? GOLD : BORDER, position: "relative", transition: "background 0.2s", flexShrink: 0 }}>
@@ -45,15 +45,15 @@ function Toggle({ value, onChange }) {
     </div>
   );
 }
-
+ 
 function Badge({ text, color }) {
   return <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: 1, padding: "2px 7px", borderRadius: 4, background: color + "22", color, border: `1px solid ${color}44`, textTransform: "uppercase" }}>{text}</span>;
 }
-
+ 
 function Spinner() {
   return <div style={{ width: 32, height: 32, border: `3px solid ${BORDER}`, borderTop: `3px solid ${GOLD}`, borderRadius: "50%", animation: "spin 0.8s linear infinite" }} />;
 }
-
+ 
 // ── Login Page ────────────────────────────────────────────────────────────────
 function LoginPage() {
   return (
@@ -79,17 +79,17 @@ function LoginPage() {
     </div>
   );
 }
-
+ 
 // ── Server Picker ─────────────────────────────────────────────────────────────
 function ServerPicker({ token, user, onSelect }) {
   const [guilds, setGuilds] = useState(null);
-
+ 
   useEffect(() => {
     apiFetch("/auth/guilds", token).then(setGuilds);
   }, [token]);
-
+ 
   const INVITE = `https://discord.com/oauth2/authorize?client_id=${CLIENT_ID}&scope=bot+applications.commands&permissions=8`;
-
+ 
   return (
     <div style={{ minHeight: "100vh", background: BG, padding: 32 }}>
       <style>{`@keyframes fadeIn { from { opacity:0; transform:translateY(12px); } to { opacity:1; transform:translateY(0); } }`}</style>
@@ -102,9 +102,9 @@ function ServerPicker({ token, user, onSelect }) {
           </div>
           {user?.avatar && <img src={`https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.png`} style={{ width: 36, height: 36, borderRadius: "50%", marginLeft: "auto", border: `2px solid ${BORDER}` }} />}
         </div>
-
+ 
         <div style={{ fontSize: 13, color: TEXT_DIM, marginBottom: 16, letterSpacing: 0.5, textTransform: "uppercase", fontWeight: 700 }}>Select a Server</div>
-
+ 
         {!guilds ? (
           <div style={{ display: "flex", justifyContent: "center", padding: 40 }}><Spinner /></div>
         ) : (
@@ -137,7 +137,7 @@ function ServerPicker({ token, user, onSelect }) {
     </div>
   );
 }
-
+ 
 // ── Nav ───────────────────────────────────────────────────────────────────────
 const NAV = [
   { id: "overview", icon: "⬡", label: "Overview" },
@@ -157,7 +157,7 @@ const NAV = [
   { id: "premium", icon: "💎", label: "Premium", gold: true },
 ];
 const SOON = ["moderation", "gambling", "embed", "reactionroles", "antinuke"];
-
+ 
 // ── Dashboard Pages ───────────────────────────────────────────────────────────
 function ComingSoon() {
   return (
@@ -168,7 +168,7 @@ function ComingSoon() {
     </div>
   );
 }
-
+ 
 function Overview({ token, guild, stats }) {
   const statCards = [
     { label: "Servers", value: stats?.guildCount ?? "—", color: GOLD },
@@ -196,7 +196,7 @@ function Overview({ token, guild, stats }) {
     </div>
   );
 }
-
+ 
 function Permissions({ token, guild }) {
   const features = [
     { label: "Reaction Role", value: "reactionrole" },
@@ -207,15 +207,15 @@ function Permissions({ token, guild }) {
   const [perms, setPerms] = useState(null);
   const [roles, setRoles] = useState([]);
   const [saving, setSaving] = useState(false);
-
+ 
   useEffect(() => {
     if (!guild) return;
     apiFetch(`/guild/${guild.id}/permissions`, token).then(setPerms);
     apiFetch(`/guild/${guild.id}/roles`, token).then(setRoles);
   }, [guild]);
-
+ 
   const fp = perms?.[selected] ?? { grant: [], deny: [] };
-
+ 
   function addRole(type, roleId) {
     if (!roleId) return;
     const updated = { ...perms, [selected]: { ...fp, [type]: [...(fp[type] ?? []), roleId].filter((v, i, a) => a.indexOf(v) === i) } };
@@ -223,20 +223,20 @@ function Permissions({ token, guild }) {
     if (type === "deny") updated[selected].grant = updated[selected].grant.filter(id => id !== roleId);
     setPerms(updated);
   }
-
+ 
   function removeRole(type, roleId) {
     const updated = { ...perms, [selected]: { ...fp, [type]: fp[type].filter(id => id !== roleId) } };
     setPerms(updated);
   }
-
+ 
   async function save() {
     setSaving(true);
     await apiFetch(`/guild/${guild.id}/permissions`, token, { method: "POST", body: JSON.stringify(perms) });
     setSaving(false);
   }
-
+ 
   const roleById = id => roles.find(r => r.id === id);
-
+ 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
       <Card>
@@ -283,7 +283,7 @@ function Permissions({ token, guild }) {
     </div>
   );
 }
-
+ 
 function Logs({ token, guild }) {
   const logTypes = [
     { key: "deleted", label: "Deleted Messages", icon: "🗑️" },
@@ -295,17 +295,17 @@ function Logs({ token, guild }) {
   const [channels, setChannels] = useState([]);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
-
+ 
   useEffect(() => {
     if (!guild) return;
     apiFetch(`/guild/${guild.id}/channels`, token).then(setChannels);
     apiFetch(`/guild/${guild.id}/logs`, token).then(setConfig);
   }, [guild]);
-
+ 
   function update(key, field, value) {
     setConfig(c => ({ ...c, [key]: { ...c[key], [field]: value } }));
   }
-
+ 
   async function save() {
     setSaving(true);
     await apiFetch(`/guild/${guild.id}/logs`, token, { method: "POST", body: JSON.stringify(config) });
@@ -313,9 +313,9 @@ function Logs({ token, guild }) {
     setSaved(true);
     setTimeout(() => setSaved(false), 2000);
   }
-
+ 
   if (!config) return <div style={{ color: TEXT_DIM, padding: 40, textAlign: "center" }}>Loading...</div>;
-
+ 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
       <SectionTitle>Log Channels</SectionTitle>
@@ -347,18 +347,18 @@ function Logs({ token, guild }) {
     </div>
   );
 }
-
+ 
 function Welcome({ token, guild }) {
   const [enabled, setEnabled] = useState(false);
   const [msg, setMsg] = useState("Welcome to the server, {user}! 🎉");
   const [channels, setChannels] = useState([]);
   const [channel, setChannel] = useState("");
-
+ 
   useEffect(() => {
     if (!guild) return;
     apiFetch(`/guild/${guild.id}/channels`, token).then(setChannels);
   }, [guild]);
-
+ 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
       <Card style={{ display: "flex", alignItems: "center", gap: 16 }}>
@@ -396,23 +396,23 @@ function Welcome({ token, guild }) {
     </div>
   );
 }
-
+ 
 function JoinRoles({ token, guild }) {
   const [roles, setRoles] = useState([]);
   const [allRoles, setAllRoles] = useState([]);
   const [selected, setSelected] = useState("");
-
+ 
   useEffect(() => {
     if (!guild) return;
     apiFetch(`/guild/${guild.id}/roles`, token).then(setAllRoles);
   }, [guild]);
-
+ 
   function add() {
     if (!selected || roles.find(r => r.id === selected)) return;
     const role = allRoles.find(r => r.id === selected);
     if (role) { setRoles(p => [...p, role]); setSelected(""); }
   }
-
+ 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
       <Card>
@@ -443,7 +443,7 @@ function JoinRoles({ token, guild }) {
     </div>
   );
 }
-
+ 
 function Settings({ token, guild }) {
   const [prefix, setPrefix] = useState(",");
   return (
@@ -462,7 +462,7 @@ function Settings({ token, guild }) {
     </div>
   );
 }
-
+ 
 function Premium() {
   const perks = [
     { icon: "🤖", title: "Custom Bot Name", desc: "Set a unique nickname for Helix in your server" },
@@ -498,38 +498,37 @@ function Premium() {
     </div>
   );
 }
-
+ 
 // ── Chest Settings ────────────────────────────────────────────────────────────
 const RARITIES = ["Common", "Uncommon", "Rare", "Epic", "Ascended", "Legendary", "Mythic", "Godly", "Divine"];
 const RARITY_COLORS = { Divine: "#ff6b6b", Godly: "#ff9f43", Mythic: "#a29bfe", Legendary: "#fd79a8", Ascended: "#6c5ce7", Epic: "#e17055", Rare: "#74b9ff", Uncommon: "#55efc4", Common: "#b2bec3" };
 const RARITY_EMOJIS = { Divine: "💀", Godly: "🔥", Mythic: "✨", Legendary: "🔴", Ascended: "🗝️", Epic: "🟠", Rare: "🟣", Uncommon: "🔵", Common: "🟢" };
-
+ 
 function ChestSettings({ token, guild }) {
   const [config, setConfig] = useState(null);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
-  const [newPrize, setNewPrize] = useState({ name: "", weight: 1, emoji: "", rewardType: "none", rewardAmount: 0 });
-
+  const [newPrize, setNewPrize] = useState({ name: "", rarity: "Common" });
+ 
   useEffect(() => {
     if (!guild) return;
     apiFetch(`/guild/${guild.id}/chest-config`, token).then(d => setConfig(d || { prizes: [], embed: { color: "#5865F2", title: "🔮  HELIX VAULT", description: "Open chests to win amazing prizes!" } }));
   }, [guild]);
-
+ 
   function addPrize() {
     if (!newPrize.name.trim()) return;
-    const reward = (newPrize.rewardType && newPrize.rewardType !== "none") ? { type: newPrize.rewardType, amount: Number(newPrize.rewardAmount || 0) } : {};
-    setConfig(c => ({ ...c, prizes: [...c.prizes, { name: newPrize.name.trim(), weight: Number(newPrize.weight || 1), emoji: newPrize.emoji || "", reward }] }));
-    setNewPrize({ name: "", weight: 1, emoji: "", rewardType: "none", rewardAmount: 0 });
+    setConfig(c => ({ ...c, prizes: [...c.prizes, { name: newPrize.name.trim(), rarity: newPrize.rarity }] }));
+    setNewPrize({ name: "", rarity: "Common" });
   }
-
+ 
   function removePrize(i) {
     setConfig(c => ({ ...c, prizes: c.prizes.filter((_, idx) => idx !== i) }));
   }
-
+ 
   function updateEmbed(key, val) {
     setConfig(c => ({ ...c, embed: { ...c.embed, [key]: val } }));
   }
-
+ 
   async function save() {
     setSaving(true);
     await apiFetch(`/guild/${guild.id}/chest-config`, token, { method: "POST", body: JSON.stringify(config) });
@@ -537,30 +536,30 @@ function ChestSettings({ token, guild }) {
     setSaved(true);
     setTimeout(() => setSaved(false), 2000);
   }
-
+ 
   // Build preview description
   function buildPreview() {
     if (!config) return "";
     let desc = config.embed?.description || "";
     config.prizes.forEach((p, i) => {
-      const emoji = p.emoji || "🎁";
-      desc = desc.replace(`{prize_${i + 1}}`, `${emoji} **${p.name}**`);
+      const emoji = RARITY_EMOJIS[p.rarity] || "🎁";
+      desc = desc.replace(`{prize_${i + 1}}`, `${emoji} **${p.name}** — ${p.rarity}`);
     });
     return desc.replace(/\{prize_\d+\}/g, "");
   }
-
+ 
   if (!config) return <div style={{ color: TEXT_DIM, padding: 40, textAlign: "center" }}>Loading...</div>;
-
+ 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-
+ 
       {/* Prize List */}
       <Card>
         <SectionTitle>🎁  Prize Pool</SectionTitle>
         <div style={{ color: TEXT_DIM, fontSize: 12, marginBottom: 12 }}>
           These are the prizes members can win in this server. Use <code style={{ color: GOLD, background: SURFACE2, padding: "1px 5px", borderRadius: 4 }}>{"{prize_1}"}</code>, <code style={{ color: GOLD, background: SURFACE2, padding: "1px 5px", borderRadius: 4 }}>{"{prize_2}"}</code> etc. in your embed description to display them.
         </div>
-
+ 
         {/* Add prize form */}
         <div style={{ display: "flex", gap: 8, marginBottom: 12 }}>
           <input
@@ -570,46 +569,25 @@ function ChestSettings({ token, guild }) {
             placeholder="Prize name..."
             style={{ flex: 1, background: SURFACE2, border: `1px solid ${BORDER}`, borderRadius: 8, color: TEXT, padding: "9px 12px", fontSize: 13, outline: "none" }}
           />
-          <input
-            type="number"
-            min="1"
-            value={newPrize.weight}
-            onChange={e => setNewPrize(p => ({ ...p, weight: Number(e.target.value) }))}
-            style={{ width: 90, background: SURFACE2, border: `1px solid ${BORDER}`, borderRadius: 8, color: TEXT, padding: "9px 12px", fontSize: 13 }}
-          />
-          <input
-            value={newPrize.emoji}
-            onChange={e => setNewPrize(p => ({ ...p, emoji: e.target.value }))}
-            placeholder="Emoji (optional)"
-            style={{ width: 120, background: SURFACE2, border: `1px solid ${BORDER}`, borderRadius: 8, color: TEXT, padding: "9px 12px", fontSize: 13 }}
-          />
-          <select value={newPrize.rewardType} onChange={e => setNewPrize(p => ({ ...p, rewardType: e.target.value }))} style={{ width: 140, background: SURFACE2, border: `1px solid ${BORDER}`, borderRadius: 8, color: TEXT, padding: "9px 12px", fontSize: 13 }}>
-            <option value="none">No Reward</option>
-            <option value="coins">Coins</option>
-            <option value="exp">EXP</option>
-            <option value="prize">Prize Item</option>
+          <select
+            value={newPrize.rarity}
+            onChange={e => setNewPrize(p => ({ ...p, rarity: e.target.value }))}
+            style={{ background: SURFACE2, border: `1px solid ${RARITY_COLORS[newPrize.rarity]}66`, borderRadius: 8, color: RARITY_COLORS[newPrize.rarity], padding: "9px 12px", fontSize: 13, outline: "none", fontWeight: 700 }}
+          >
+            {RARITIES.map(r => <option key={r} value={r}>{r}</option>)}
           </select>
-          <input
-            type="number"
-            min="0"
-            value={newPrize.rewardAmount}
-            onChange={e => setNewPrize(p => ({ ...p, rewardAmount: Number(e.target.value) }))}
-            placeholder="Amount"
-            style={{ width: 110, background: SURFACE2, border: `1px solid ${BORDER}`, borderRadius: 8, color: TEXT, padding: "9px 12px", fontSize: 13 }}
-          />
           <button onClick={addPrize} style={{ padding: "9px 16px", borderRadius: 8, background: GOLD, color: BG, border: "none", fontWeight: 800, fontSize: 13, cursor: "pointer" }}>Add</button>
         </div>
-
+ 
         {/* Prize list */}
         {config.prizes.length === 0
           ? <div style={{ color: TEXT_DIM, fontSize: 13 }}>No prizes added yet.</div>
           : <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
             {config.prizes.map((p, i) => (
-              <div key={i} style={{ display: "flex", alignItems: "center", gap: 10, background: SURFACE2, border: `1px solid ${BORDER}`, borderRadius: 8, padding: "8px 12px" }}>
-                <span style={{ fontSize: 16 }}>{p.emoji || "🎁"}</span>
+              <div key={i} style={{ display: "flex", alignItems: "center", gap: 10, background: SURFACE2, border: `1px solid ${RARITY_COLORS[p.rarity]}44`, borderRadius: 8, padding: "8px 12px" }}>
+                <span style={{ fontSize: 16 }}>{RARITY_EMOJIS[p.rarity] || "🎁"}</span>
                 <span style={{ flex: 1, fontWeight: 600, color: TEXT, fontSize: 13 }}>{p.name}</span>
-                <span style={{ fontSize: 11, fontWeight: 700, color: TEXT, background: SURFACE2, border: `1px solid ${BORDER}`, padding: "2px 8px", borderRadius: 4 }}>Weight: {p.weight}</span>
-                <span style={{ fontSize: 11, color: TEXT_DIM, marginLeft: 8 }}>{p.reward && p.reward.type ? (p.reward.type === "coins" ? `${p.reward.amount} coins` : p.reward.type === "exp" ? `${p.reward.amount} EXP` : "Prize Item") : "No reward"}</span>
+                <span style={{ fontSize: 11, fontWeight: 700, color: RARITY_COLORS[p.rarity], background: RARITY_COLORS[p.rarity] + "22", border: `1px solid ${RARITY_COLORS[p.rarity]}44`, padding: "2px 8px", borderRadius: 4 }}>{p.rarity}</span>
                 <span style={{ fontSize: 10, color: TEXT_DIM, fontFamily: "monospace" }}>{"{prize_" + (i + 1) + "}"}</span>
                 <button onClick={() => removePrize(i)} style={{ background: RED + "22", border: `1px solid ${RED}44`, color: RED, borderRadius: 6, padding: "3px 8px", cursor: "pointer", fontSize: 12, fontWeight: 700 }}>✕</button>
               </div>
@@ -617,7 +595,7 @@ function ChestSettings({ token, guild }) {
           </div>
         }
       </Card>
-
+ 
       {/* Embed Builder */}
       <Card>
         <SectionTitle>📝  Embed Builder</SectionTitle>
@@ -644,7 +622,7 @@ function ChestSettings({ token, guild }) {
           </div>
         </div>
       </Card>
-
+ 
       {/* Preview */}
       <Card>
         <SectionTitle>👁️  Embed Preview</SectionTitle>
@@ -656,14 +634,14 @@ function ChestSettings({ token, guild }) {
         </div>
         <div style={{ color: TEXT_DIM, fontSize: 11, marginTop: 8 }}>This is what will be posted when you run <code style={{ color: GOLD }}>/chestsetup</code></div>
       </Card>
-
+ 
       <button onClick={save} style={{ padding: 12, borderRadius: 8, background: saved ? GREEN : GOLD, color: BG, border: "none", fontWeight: 800, fontSize: 14, cursor: "pointer", transition: "background 0.3s" }}>
         {saving ? "Saving..." : saved ? "✓ Saved! Run /chestsetup to post" : "Save Chest Settings"}
       </button>
     </div>
   );
 }
-
+ 
 // ── Chest Permissions ─────────────────────────────────────────────────────────
 function ChestPermissions({ token, guild }) {
   const [config, setConfig] = useState(null);
@@ -673,34 +651,34 @@ function ChestPermissions({ token, guild }) {
   const [saved, setSaved] = useState(false);
   const [selectedRole, setSelectedRole] = useState("");
   const [selectedChannel, setSelectedChannel] = useState("");
-
+ 
   useEffect(() => {
     if (!guild) return;
     apiFetch(`/guild/${guild.id}/chest-permissions`, token).then(d => setConfig(d || { allowedRoles: [], allowedChannels: [] }));
     apiFetch(`/guild/${guild.id}/roles`, token).then(setRoles);
     apiFetch(`/guild/${guild.id}/channels`, token).then(setChannels);
   }, [guild]);
-
+ 
   function addRole() {
     if (!selectedRole || config.allowedRoles.includes(selectedRole)) return;
     setConfig(c => ({ ...c, allowedRoles: [...c.allowedRoles, selectedRole] }));
     setSelectedRole("");
   }
-
+ 
   function removeRole(id) {
     setConfig(c => ({ ...c, allowedRoles: c.allowedRoles.filter(r => r !== id) }));
   }
-
+ 
   function addChannel() {
     if (!selectedChannel || config.allowedChannels.includes(selectedChannel)) return;
     setConfig(c => ({ ...c, allowedChannels: [...c.allowedChannels, selectedChannel] }));
     setSelectedChannel("");
   }
-
+ 
   function removeChannel(id) {
     setConfig(c => ({ ...c, allowedChannels: c.allowedChannels.filter(ch => ch !== id) }));
   }
-
+ 
   async function save() {
     setSaving(true);
     await apiFetch(`/guild/${guild.id}/chest-permissions`, token, { method: "POST", body: JSON.stringify(config) });
@@ -708,12 +686,12 @@ function ChestPermissions({ token, guild }) {
     setSaved(true);
     setTimeout(() => setSaved(false), 2000);
   }
-
+ 
   if (!config) return <div style={{ color: TEXT_DIM, padding: 40, textAlign: "center" }}>Loading...</div>;
-
+ 
   const roleById = id => roles.find(r => r.id === id);
   const channelById = id => channels.find(c => c.id === id);
-
+ 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
       <Card>
@@ -721,7 +699,7 @@ function ChestPermissions({ token, guild }) {
           Control which roles can use chest commands and which channels they work in. Leave both empty to allow everyone everywhere.
         </div>
       </Card>
-
+ 
       {/* Allowed Roles */}
       <Card>
         <SectionTitle>🎭  Allowed Roles</SectionTitle>
@@ -743,7 +721,7 @@ function ChestPermissions({ token, guild }) {
           ))
         }
       </Card>
-
+ 
       {/* Allowed Channels */}
       <Card>
         <SectionTitle>📢  Allowed Channels</SectionTitle>
@@ -765,23 +743,23 @@ function ChestPermissions({ token, guild }) {
           ))
         }
       </Card>
-
+ 
       <button onClick={save} style={{ padding: 12, borderRadius: 8, background: saved ? GREEN : GOLD, color: BG, border: "none", fontWeight: 800, fontSize: 14, cursor: "pointer", transition: "background 0.3s" }}>
         {saving ? "Saving..." : saved ? "✓ Saved!" : "Save Chest Permissions"}
       </button>
     </div>
   );
 }
-
+ 
 // ── Dashboard Shell ───────────────────────────────────────────────────────────
 function Dashboard({ token, user, guild, onBack }) {
   const [active, setActive] = useState("overview");
   const [stats, setStats] = useState(null);
-
+ 
   useEffect(() => {
     apiFetch(`/guild/${guild.id}/stats`, token).then(setStats);
   }, [guild]);
-
+ 
   const PAGES = {
     overview: <Overview token={token} guild={guild} stats={stats} />,
     automod: <AutoMod token={token} guild={guild} apiFetch={apiFetch} user={user} />,
@@ -794,13 +772,13 @@ function Dashboard({ token, user, guild, onBack }) {
     chestperms: <ChestPermissions token={token} guild={guild} />,
     premium: <Premium />,
   };
-
+ 
   const currentNav = NAV.find(n => n.id === active);
-
+ 
   return (
     <div style={{ display: "flex", height: "100vh", background: BG, color: TEXT, fontFamily: "'Inter', system-ui, sans-serif", overflow: "hidden" }}>
       <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
-
+ 
       {/* Sidebar */}
       <div style={{ width: 220, background: SURFACE, borderRight: `1px solid ${BORDER}`, display: "flex", flexDirection: "column", flexShrink: 0, overflowY: "auto" }}>
         <div style={{ padding: "20px 16px 16px", borderBottom: `1px solid ${BORDER}` }}>
@@ -812,7 +790,7 @@ function Dashboard({ token, user, guild, onBack }) {
             </div>
           </div>
         </div>
-
+ 
         <div style={{ padding: "12px 12px 4px" }}>
           <div style={{ fontSize: 10, color: TEXT_DIM, letterSpacing: 1, textTransform: "uppercase", marginBottom: 6, paddingLeft: 4 }}>Server</div>
           <div onClick={onBack} style={{ background: SURFACE2, border: `1px solid ${BORDER}`, borderRadius: 8, padding: "8px 12px", fontSize: 13, fontWeight: 600, color: TEXT, cursor: "pointer", display: "flex", alignItems: "center", gap: 8 }}>
@@ -821,7 +799,7 @@ function Dashboard({ token, user, guild, onBack }) {
             <span style={{ color: TEXT_DIM, fontSize: 11 }}>▾</span>
           </div>
         </div>
-
+ 
         <nav style={{ padding: "8px 8px", flex: 1 }}>
           {NAV.map(n => {
             const isActive = active === n.id;
@@ -841,13 +819,13 @@ function Dashboard({ token, user, guild, onBack }) {
             );
           })}
         </nav>
-
+ 
         <div style={{ padding: "12px 16px", borderTop: `1px solid ${BORDER}`, display: "flex", alignItems: "center", gap: 8 }}>
           {user?.avatar && <img src={`https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.png`} style={{ width: 28, height: 28, borderRadius: "50%" }} />}
           <span style={{ fontSize: 12, color: TEXT_DIM, overflow: "hidden", textOverflow: "ellipsis" }}>{user?.username}</span>
         </div>
       </div>
-
+ 
       {/* Main */}
       <div style={{ flex: 1, display: "flex", flexDirection: "column", overflow: "hidden" }}>
         <div style={{ height: 56, borderBottom: `1px solid ${BORDER}`, padding: "0 24px", display: "flex", alignItems: "center", justifyContent: "space-between", flexShrink: 0 }}>
@@ -867,19 +845,19 @@ function Dashboard({ token, user, guild, onBack }) {
     </div>
   );
 }
-
+ 
 // ── OAuth Callback Handler ────────────────────────────────────────────────────
 function useOAuth() {
   const [token, setToken] = useState(() => localStorage.getItem("helix_token"));
   const [loading, setLoading] = useState(false);
   const exchanged = useRef(false);
-
+ 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const code = params.get("code");
     if (!code || token || exchanged.current) return;
     exchanged.current = true;
-
+ 
     setLoading(true);
     fetch(`${API}/auth/callback`, {
       method: "POST",
@@ -896,16 +874,16 @@ function useOAuth() {
       })
       .finally(() => setLoading(false));
   }, []);
-
+ 
   return { token, loading, logout: () => { localStorage.removeItem("helix_token"); setToken(null); } };
 }
-
+ 
 // ── Root App ──────────────────────────────────────────────────────────────────
 export default function App() {
   const { token, loading, logout } = useOAuth();
   const [user, setUser] = useState(null);
   const [guild, setGuild] = useState(null);
-
+ 
   useEffect(() => {
     if (!token) return;
     apiFetch("/auth/user", token).then(u => {
@@ -913,13 +891,13 @@ export default function App() {
       else logout();
     });
   }, [token]);
-
+ 
   if (loading) return (
     <div style={{ minHeight: "100vh", background: BG, display: "flex", alignItems: "center", justifyContent: "center" }}>
       <Spinner />
     </div>
   );
-
+ 
   if (!token || !user) return <LoginPage />;
   if (!guild) return <ServerPicker token={token} user={user} onSelect={setGuild} />;
   return <Dashboard token={token} user={user} guild={guild} onBack={() => setGuild(null)} />;
